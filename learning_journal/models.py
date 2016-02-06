@@ -3,6 +3,9 @@ from sqlalchemy import (
     Index,
     Integer,
     Text,
+    Unicode,
+    DateTime,
+    func,
     )
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,9 +16,34 @@ from sqlalchemy.orm import (
     )
 
 from zope.sqlalchemy import ZopeTransactionExtension
+import operator
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
+
+
+class Entry(Base):
+    __tablename__ = 'entries'
+    id = Column(Integer, primary_key=True)
+    title = Column(Unicode(255), unique=True)
+    body = Column(Unicode, nullable=True)
+    created = Column(DateTime(timezone=False), default=func.now())
+    edited = Column(DateTime(timezone=False), default=func.now())
+
+def all(cls):
+    '''
+    Return all records sorted by created date
+    '''
+    query = cls.query(Entry.id, Entry.title, Entry.body, Entry.created, Entry.edited)
+    query.sort(key = operator.itemgetter('created'))
+    return(query)
+
+def by_id(cls,id):
+    '''
+    return record for the specified id
+    '''
+    entry = cls.query(Entry).filter(Entry.id == id)
+    return(entry)
 
 
 class MyModel(Base):
