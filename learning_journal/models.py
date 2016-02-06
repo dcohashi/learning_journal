@@ -24,26 +24,26 @@ Base = declarative_base()
 
 class Entry(Base):
     __tablename__ = 'entries'
-    id = Column(Integer, primary_key=True)
-    title = Column(Unicode(255), unique=True)
-    body = Column(Unicode, nullable=True)
-    created = Column(DateTime(timezone=False), default=func.now())
-    edited = Column(DateTime(timezone=False), default=func.now())
+    id = Column('id', Integer, primary_key=True)
+    Column('title',Unicode(255), unique=True)
+    Column('body',Unicode, nullable=True)
+    Column('created',DateTime(timezone=False), default=func.now())
+    Column('edited', DateTime(timezone=False), default=func.now(), onupdate=func.now())
 
-def all(cls):
-    '''
-    Return all records sorted by created date
-    '''
-    query = cls.query(Entry.id, Entry.title, Entry.body, Entry.created, Entry.edited)
-    query.sort(key = operator.itemgetter('created'))
-    return(query)
+    def all(cls):
+        '''
+        Return all records sorted by created date
+        '''
+        all_records = cls.query.all()
+        all_records.sort(key=operator.itemgetter('created'), reverse=True)
+        return all_records 
 
-def by_id(cls,id):
-    '''
-    return record for the specified id
-    '''
-    entry = cls.query(Entry).filter(Entry.id == id)
-    return(entry)
+    def by_id(cls,id):
+        '''
+        return record for the specified id
+        '''
+        entry = cls.query(Entry).get(id)
+        return entry
 
 
 class MyModel(Base):
