@@ -6,6 +6,7 @@ from sqlalchemy import (
     Unicode,
     DateTime,
     func,
+    desc,
     )
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -24,25 +25,29 @@ Base = declarative_base()
 
 class Entry(Base):
     __tablename__ = 'entries'
-    id = Column('id', Integer, primary_key=True)
-    Column('title',Unicode(255), unique=True)
-    Column('body',Unicode, nullable=True)
-    Column('created',DateTime(timezone=False), default=func.now())
-    Column('edited', DateTime(timezone=False), default=func.now(), onupdate=func.now())
+    id = Column(Integer, primary_key=True)
+    title = Column(Unicode(255), nullable=False, unique=True)
+    body = Column(Unicode, nullable=True)
+    created = Column(DateTime(timezone=False), default=func.now())
+    edited = Column(DateTime(timezone=False), default=func.now(), onupdate=func.now())
 
+    @classmethod
     def all(cls):
         '''
         Return all records sorted by created date
         '''
-        all_records = cls.query.all()
-        all_records.sort(key=operator.itemgetter('created'), reverse=True)
-        return all_records 
+        all_records = DBSession.query(cls)
+        all_records = all_records.order_by(desc(cls.created))
+        return all_records
 
-    def by_id(cls,id):
+
+    @classmethod
+    def by_id(cls, id):
         '''
         return record for the specified id
         '''
-        entry = cls.query(Entry).get(id)
+        all_records = DBSession.query(cls)
+        entry = all_records.get(id)
         return entry
 
 
