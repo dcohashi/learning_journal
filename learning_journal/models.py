@@ -8,6 +8,7 @@ from sqlalchemy import (
     func,
     desc,
     )
+import datetime
 
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -28,25 +29,32 @@ class Entry(Base):
     id = Column(Integer, primary_key=True)
     title = Column(Unicode(255), nullable=False, unique=True)
     body = Column(Unicode, nullable=True)
-    created = Column(DateTime(timezone=False), default=func.now())
-    edited = Column(DateTime(timezone=False), default=func.now(), onupdate=func.now())
+    created = Column(DateTime(timezone=False), 
+                              default=datetime.datetime.utcnow)
+    edited = Column(DateTime(timezone=False), 
+                             default=datetime.datetime.utcnow, 
+                             onupdate=datetime.datetime.utcnow)
 
     @classmethod
-    def all(cls):
+    def all(cls, session=None):
         '''
         Return all records sorted by created date
         '''
-        all_records = DBSession.query(cls)
+        if session is None:
+            session = DBSession
+        all_records = session.query(cls)
         all_records = all_records.order_by(desc(cls.created))
         return all_records
 
 
     @classmethod
-    def by_id(cls, id):
+    def by_id(cls, id, session=None):
         '''
         return record for the specified id
         '''
-        all_records = DBSession.query(cls)
+        if session is None:
+            session = DBSession
+        all_records = session.query(cls)
         entry = all_records.get(id)
         return entry
 
