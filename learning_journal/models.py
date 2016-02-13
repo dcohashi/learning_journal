@@ -59,6 +59,21 @@ class Entry(Base):
         return entry
 
 
+class User(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    username = Column(Unicode(255), nullable=False, unique=True, index=True)
+    password = Column(Unicode, nullable=False)
+
+    @classmethod
+    def user(cls, name, session=None):
+        if session is None:
+            session = DBSession
+        all_records = session.query(cls)
+        entry = all_records.get(name)
+        return entry
+
+
 class MyModel(Base):
     __tablename__ = 'models'
     id = Column(Integer, primary_key=True)
