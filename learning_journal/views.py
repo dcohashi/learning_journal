@@ -15,7 +15,8 @@ from .models import (
 @view_config(route_name='home', renderer='templates/list.jinja2')
 def index_page(request):
     entries = Entry.all()
-    return {'entries': entries}
+    return {'entries': entries}:w
+
 
 @view_config(route_name='detail', renderer='templates/detail.jinja2')
 def view(request):
@@ -35,9 +36,15 @@ def create(request):
         return HTTPFound(location=request.route_url('home'))
     return {'form': form, 'action': request.matchdict.get('action')}
 
-@view_config(route_name='action', match_param='action=edit', renderer='string')
-def update(request):
-    return 'edit page'
+@view_config(route_name='action', match_param='action=edit', renderer='templates/edit.jinja2')
+def update(request, id):
+    entry = Entry.by_id(id)
+    form = EntryCreateForm(request.POST, entry)
+    if request.method == 'POST' and form.validate():
+        form.populate_obj(entry)
+        entry.save()
+        return HTTPFound(location=request.route_url('home'))
+    return {'form': form, 'action': request.matchdict.get('action')}
 
 '''
 @view_config(route_name='home', renderer='templates/mytemplate.pt')

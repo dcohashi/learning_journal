@@ -6,5 +6,6 @@
   <p>{{ entry.body }}</p>
   <hr/>
   <p>Created <strong title="{{ entry.created }}">{{entry.created}}</strong></p>
+  <a href="{{ request.route_url('action', action='edit', _query={'id':entry.id}) }}">Edit</a>
 </article>
 {% endblock %}
