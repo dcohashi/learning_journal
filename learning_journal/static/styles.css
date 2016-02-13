@@ -2,6 +2,7 @@ body{
     color:#111;
     padding:0;
     margin:0;
+    background-image: url("cloud_cover.jpg");
     background-color: #eee;}
 header{
     margin:0;
