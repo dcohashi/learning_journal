@@ -3,6 +3,9 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPFound
 from .forms import EntryCreateForm
+from pyramid.security import forget, remember
+from .forms import LoginForm
+from .models import User
 
 from sqlalchemy.exc import DBAPIError
 
@@ -26,7 +29,8 @@ def view(request):
         return HTTPNotFound()
     return {'entry': entry}
 
-@view_config(route_name='action', match_param='action=create', renderer='templates/edit.jinja2')
+@view_config(route_name='action', match_param='action=create', 
+        renderer='templates/edit.jinja2', permission='create')
 def create(request):
     entry = Entry()
     form = EntryCreateForm(request.POST)
@@ -36,7 +40,8 @@ def create(request):
         return HTTPFound(location=request.route_url('home'))
     return {'form': form, 'action': request.matchdict.get('action')}
 
-@view_config(route_name='action', match_param='action=edit', renderer='templates/edit.jinja2')
+@view_config(route_name='action', match_param='action=edit', 
+        renderer='templates/edit.jinja2', permission='edit')
 def update(request):
     string = request.query_string
     __, req_id = string.split('=')
@@ -46,6 +51,23 @@ def update(request):
         form.populate_obj(entry)
         return HTTPFound(location=request.route_url('detail', id=req_id))
     return {'form': form, 'action': request.matchdict.get('action')}
+
+
+@view_config(route_name='auth', match_param='action=in', renderer='string',
+     request_method='POST')
+def sign_in(request):
+    login_form = None
+    if request.method == 'POST':
+        login_form = LoginForm(request.POST)
+    if login_form and login_form.validate():
+        user = User.by_name(login_form.username.data)
+        if user and user.verify_password(login_form.password.data):
+            headers = remember(request, user.name)
+        else:
+            headers = forget(request)
+    else:
+        headers = forget(request)
+    return HTTPFound(location=request.route_url('home'), headers=headers)
 
 '''
 @view_config(route_name='home', renderer='templates/mytemplate.pt')

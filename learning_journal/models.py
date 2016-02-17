@@ -1,3 +1,4 @@
+from passlib.context import CryptContext
 from sqlalchemy import (
     Column,
     Index,
@@ -58,6 +59,7 @@ class Entry(Base):
         entry = all_records.get(id)
         return entry
 
+password_context = CryptContext(schemes=['pbkdf2_sha512'])
 
 class User(Base):
     __tablename__ = 'users'
@@ -72,7 +74,10 @@ class User(Base):
         all_records = session.query(cls)
         entry = all_records.get(name)
         return entry
-
+    
+    @classmethod
+    def verify_password(self, password):
+        return password_context.verify(password, self.password)
 
 class MyModel(Base):
     __tablename__ = 'models'
